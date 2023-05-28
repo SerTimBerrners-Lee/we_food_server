@@ -1,5 +1,5 @@
 import { Column, DataType, HasMany, Table, Model, AfterSync } from "sequelize-typescript";
-import { Role } from "src/enums";
+import { ClientStatus, Role } from "src/enums";
 import * as bcrypt from 'bcryptjs';
 import { Order } from "src/order/order.model";
 
@@ -14,6 +14,9 @@ export class User extends Model<User> {
 
 	@Column({type: DataType.STRING, allowNull: true })
 	surname: string;
+
+	@Column({type: DataType.STRING, allowNull: true, defaultValue: ClientStatus.not_confirmed })
+	status: string;
 
 	@Column({type: DataType.INTEGER, defaultValue: 0 })
 	discount: number;
@@ -63,7 +66,8 @@ export class User extends Model<User> {
 					email: 'david.perov60@gmail.com',
 					name: 'David',
 					surname: 'Perov',
-					role: Role.admin
+					role: Role.admin,
+					status: ClientStatus.confirmed
 				});
 			} catch (err) {
 				console.error(err);

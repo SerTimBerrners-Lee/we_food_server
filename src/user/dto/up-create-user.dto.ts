@@ -8,4 +8,5 @@ export class UpCreateUserDto {
 	readonly phone: string;
 	readonly birthday: string;
 	readonly role: string;
+	readonly status: string;
 }

@@ -91,7 +91,19 @@ export class OrderService {
 	async findAllBanned(page = 1, limit = 25): Promise<{ data: Order[]; total: number, success: boolean }> {
 		const offset = (page - 1) * limit;
 		const { count, rows } = await this.orderRepository.findAndCountAll({
-			offset, limit, where: { ban: true }
+			offset, limit, where: { ban: true },
+			include: [
+				{
+					model: User
+				},
+				{
+					model: ProductLine
+				},
+				{
+					model: Stage,
+					attributes: ['id', 'status']
+				}
+			]
 		});
 
 		return { data: rows, total: count, success: true };

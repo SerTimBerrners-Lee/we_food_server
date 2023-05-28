@@ -4,7 +4,7 @@ import { User } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
 import { MailService } from '../mail/mail.service';
-import { Role } from 'src/enums';
+import { ClientStatus, Role } from 'src/enums';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class UserService {
 			}
 
 			// Сохранение данных
-			const createUser =  await this.userRepository.create({
+			const createUser = await this.userRepository.create({
 				...dto,
 				password: hashedPassword,
 			});
@@ -45,6 +45,22 @@ export class UserService {
 			console.error(err);
 			const error = err.message;
 			return { success: false, error: error };
+		}
+	}
+
+	async createClient(phone: string) {
+		try {
+			const newClient = await this.userRepository.create({
+				status: ClientStatus.not_confirmed,
+				phone: phone
+			});
+
+			if (!newClient) return { success: false, error: 'Произошла системная ошибка' }
+			return { success: true, data: newClient };
+
+		} catch (err) {
+			console.error(err);
+			return { success: false, error: err.message }
 		}
 	}
 
@@ -61,24 +77,21 @@ export class UserService {
 		return { data: user, success: true };
 	}
 
-	async updatePassword(email: string, name: string) {
+	async resetPassword(user_id: number) {
 		try {
 			const findUser = await this.userRepository.findOne({ 
-				where: {
-					email: {
-						[Op.iLike] : `%${email}%`
-					}
-				}
+				where: { id: user_id }
 			});
 	
 			if (!findUser)
-				return { success: false, error: "Пользователь с таким Email не найден" }
+				return { success: false, error: "Пользователь не найден" }
 	
 			const password = Math.random().toString(36).slice(-8);
 			let hashedPassword = await bcrypt.hash(password, 5);
 	
 			findUser.password = hashedPassword;
-			await this.mailService.sendUpdatePasswordForUser(email, password, name);
+			await findUser.save();
+			await this.mailService.sendUpdatePasswordForUser(findUser.email, password, findUser.name);
 
 			return { data: findUser, success: true }
 		} catch (err) {
@@ -105,6 +118,15 @@ export class UserService {
 
 		return { data: rows, total: count, success: true };
 	}
+
+	async findNotConfirmed(page = 1, limit = 25): Promise<{ data: User[]; total: number, success: boolean }> {
+		const offset = (page - 1) * limit;
+		const { count, rows } = await this.userRepository.findAndCountAll({
+			offset, limit, where: { ban: false, status: ClientStatus.not_confirmed }
+		});
+
+		return { data: rows, total: count, success: true };
+	}c
 
 	async findAllBanned(page = 1, limit = 25): Promise<{ data: User[]; total: number, success: boolean }> {
 		const offset = (page - 1) * limit;
@@ -159,5 +181,22 @@ export class UserService {
 		});
 
 		return user;
+	}
+
+	async findByPhone(phone: string) {
+		try {
+			const findUser = await this.userRepository.findOne({ where: { phone: {
+				[Op.iLike] : `%${phone}%`
+			}}}); 
+
+			if (!findUser)
+				return { success: false, errorr: 'Пользователь не найден' };
+			
+			return { success: true, data: findUser }
+
+		} catch (err) {
+			console.error(err);
+			return { success: false, error: err.message };
+		}
 	}
 }

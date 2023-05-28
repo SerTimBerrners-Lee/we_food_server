@@ -45,4 +45,9 @@ export class ProductLineController {
 	userBan(@Param('pl_id') pl_id: number) {
 		return this.plService.userToggleBan(pl_id);
 	}
+
+	@Get("actuallity")
+	getActuallyPl() {
+		return this.plService.getActuallyPl();
+	}
 }

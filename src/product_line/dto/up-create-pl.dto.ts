@@ -7,4 +7,5 @@ export class UpCreatePLDto {
 	readonly precent_range_discont: string;
 	readonly status: string;
 	readonly description: string;
+	readonly other_expenses: number;
 }

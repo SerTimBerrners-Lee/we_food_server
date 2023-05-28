@@ -19,6 +19,9 @@ export class ProductLine extends Model<ProductLine> {
 	@Column({type: DataType.INTEGER})
 	price_one_dishes: number;
 
+	@Column({type: DataType.INTEGER, defaultValue: 0})
+	other_expenses: number;
+
 	@Column({type: DataType.TEXT, defaultValue: '[]'})
 	precent_range_discont: string;
 

@@ -13,7 +13,9 @@ export class JwtAuth implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
 
-        if (req.hostname == 'localhost' || req.path == '/api/login_crm') return true;
+        console.log("req.hostname:", req.hostname)
+
+        if (this.tryPath(req.hostname)) return true;
         
         try {
             const token = this.getToken(req.headers.authorization);
@@ -36,5 +38,22 @@ export class JwtAuth implements CanActivate {
             return '';
     
         return token;
+    }
+
+    private tryPath(path: string) {
+        switch (path) {
+            case 'localhost':
+                return true;
+            case '/api/login_crm':
+                return true;
+            case '/product_line/actuallity':
+                return true;
+            case '/auth-by-phone':
+                return true;
+            case '/confirmation-code':
+                return true;
+            default:
+                return false;
+        }
     }
 }

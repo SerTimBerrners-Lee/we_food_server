@@ -13,5 +13,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   await app.listen(5000);
+
+  console.log('\n\n\n');
+  console.log(`Server listening on port: 5000`);
+  console.log('\n\n\n');
 }
 bootstrap();

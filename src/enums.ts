@@ -2,9 +2,14 @@
 export enum Role {
 	admin = 'Администратор',
 	manager = 'Менеджер',
-	client = 'Слиент',
+	client = 'Клиент',
 	cook = 'Повар',
 	delivery = 'Доставщик'
+}
+
+export enum ClientStatus {
+	confirmed = 'confirmed',
+	not_confirmed = 'not_confirmed'
 }
 
 export enum StatusProductLine {

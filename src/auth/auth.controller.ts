@@ -1,4 +1,4 @@
-import { All, Body, Controller, Next, Param, Post, UseGuards } from '@nestjs/common';
+import { All, Body, Controller, Next, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuth } from './jwt-auth.guard';
 
@@ -16,6 +16,16 @@ export class AuthController {
 	@Post('/login_crm')
 	loginCRM(@Body() { email, password }) {
 		return this.authService.loginCRM(email, password);
+	}
+
+	@Post('/auth-by-phone')
+	authByPhone(@Body() dto: any) {
+		return this.authService.authByPhone(dto.phone);
+	}
+
+	@Post('/confirmation-code')
+	confirmationCode(@Body() dto: any) {
+		return this.authService.confirmationCode(dto.code, dto.phone);
 	}
 
 }

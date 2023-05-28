@@ -105,4 +105,22 @@ export class ProductLineService {
 
 		return { data: PL, success: true };
 	}
+
+	async getActuallyPl() {
+		try {
+			const PL = await this.plRepostory.findAll({
+				where: { status: StatusProductLine.revelant }
+			});
+
+			if (!PL)
+				return { success: false, error: 'ОБъект не найден' }
+		
+			return { data: PL, success: true };
+
+		} catch (err) {
+			console.error(err);
+			const error = err.message;
+			return { success: false, error: error };
+		}
+	}
 }
