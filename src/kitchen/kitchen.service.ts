@@ -36,6 +36,7 @@ export class KitchenService {
 
 		try {
 			for (const order of actual_orders) {
+				
 				if (!order.date_range || !order.user_id) continue;
 				const [dat1, dat2] = order.date_range.split('|');
 	
@@ -47,7 +48,10 @@ export class KitchenService {
 				if (early > 1) continue;
 	
 				if (!order.stages.length) {
-					await createNewStage(order.user_id, order.id);
+					await this.stageService.create({
+						user_id: order.user_id,
+						order_id: order.id
+					});
 					continue;
 				}
 	
@@ -59,7 +63,10 @@ export class KitchenService {
 					const difference = getDaysDiff(today, last_date);
 	
 					if (difference <= -order.devide_by) {
-						await createNewStage(order.user_id, order.id);
+						await this.stageService.create({
+							user_id: order.user_id,
+							order_id: order.id
+						});
 						continue;
 					}
 				}
@@ -67,12 +74,6 @@ export class KitchenService {
 	
 			return { data: { message: 'Данные успешно обновлены' }, success: true };
 	
-			async function createNewStage(user_id: number, order_id: number) {
-				await this.stageService.create({
-					user_id: user_id,
-					order_id: order_id
-				});
-			}
 		} catch(err) {
 			console.error(err);
 			return { error: err.message, success: false };

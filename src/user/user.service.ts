@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import { MailService } from '../mail/mail.service';
 import { ClientStatus, Role } from 'src/enums';
 import { Op } from 'sequelize';
+import { normalizePhoneNumber } from 'src/lib/phone_methods';
 
 @Injectable()
 export class UserService {
@@ -16,15 +17,10 @@ export class UserService {
 
 	async createUser(dto: UpCreateUserDto) {
 		try {
-			const findUser = await this.userRepository.findOne({ where: { email: {
-				[Op.iLike] : `%${dto.email}%`
-			}}});
-
-			if (findUser)
-				return { data: findUser, success: false, error: 'Пользователь с таким email уже зарегестрирован на платформе' }
+			const findUser = await this.checkBeforeChenges(dto, { email: '', phone: '' });
+			if (!findUser.success) return findUser;
 
 			let hashedPassword = null;
-			
 			// Для сотрудников генерируем пароль и отправляем им на почту
 			if (dto.role != Role.client) {
 				const password = Math.random().toString(36).slice(-8);
@@ -50,6 +46,11 @@ export class UserService {
 
 	async createClient(phone: string) {
 		try {
+
+			const format_phone = normalizePhoneNumber(phone);
+			const findUser = await this.findByPhone(format_phone)
+			if (findUser.success) return { success: false, error: 'Пользователь с таким Номером уже зарегестрирован' }
+
 			const newClient = await this.userRepository.create({
 				status: ClientStatus.not_confirmed,
 				phone: phone
@@ -64,13 +65,17 @@ export class UserService {
 		}
 	}
 
+	
 	async update(dto: UpCreateUserDto) {
 		const user = await this.userRepository.findByPk(dto.id);
+
+		const checkUser = await this.checkBeforeChenges(dto, user);
+		if (!checkUser.success) return checkUser;
+	
 		if (!user)
 			return { success: false, error: 'Пользователь не найден' };
 
-
-		user.update({
+		const newUser = await user.update({
 			...dto
 		});
 
@@ -100,6 +105,38 @@ export class UserService {
 			return { success: false, error: error };
 		}
 
+	}
+
+	/**
+	 * Проверяем на совпадение по почте и по номеру перед изменениями
+	 * (Вдруг у кого-то уже есть такие почта или телефон)
+	 * @param dto 
+	 * @param user 
+	 * @returns 
+	 */
+	private async checkBeforeChenges(dto: any, user = null) {
+		let success_email = true;
+		let success_phone = true;
+
+		if (dto.email != user.email) {
+			const findUser = await this.findByEmail(dto.email);
+			if (findUser.success) success_email = false;
+		}
+
+		const phone = normalizePhoneNumber(dto.phone);
+		if (phone != user.phone) {
+			const findUser = await this.findByPhone(phone)
+			if (findUser.success) success_phone = false;
+		}
+
+		const str = `
+			Пользователь с ${!success_email ? 'такой почтой' : ' '} 
+			${!success_email && !success_phone ? 'и' : ' '}
+			${!success_phone ? 'таким номером' : ' '}
+			уже зарегистрирован`;
+		
+		if (success_email && success_phone) return { success: true }
+		return { success: false, error: str }
 	}
 
 	async findOne(user_id: number) {
@@ -171,26 +208,40 @@ export class UserService {
 		} 
 	}
 
-	async getByEmail(email: string) {
-		const user = await this.userRepository.findOne({ 
-			where: {
-				email: {
-					[Op.iLike] : `%${email}%`
+	async findByEmail(email: string) {
+		try {
+			const user = await this.userRepository.findOne({ 
+				where: {
+					email: {
+						[Op.iLike] : `%${email}%`
+					}
 				}
-			}
-		});
+			});
 
-		return user;
+			if (!user) return { error: 'Пользователь не найден', success: false };
+	
+			return { data: user, success: true };
+		} catch (err) {
+			console.error(err);
+			return { success: false, error: err.message }
+		}
 	}
 
+	/**
+	 * Пробиваем по номеру телефона :)
+	 * @param phone 
+	 * @returns 
+	 */
 	async findByPhone(phone: string) {
 		try {
+			const format_phone = normalizePhoneNumber(phone);
+
 			const findUser = await this.userRepository.findOne({ where: { phone: {
-				[Op.iLike] : `%${phone}%`
+				[Op.iLike] : `%${format_phone}%`
 			}}}); 
 
 			if (!findUser)
-				return { success: false, errorr: 'Пользователь не найден' };
+				return { success: false, error: 'Пользователь не найден' };
 			
 			return { success: true, data: findUser }
 

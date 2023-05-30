@@ -15,9 +15,6 @@ export class StageService {
 			const stage = await this.stageRepository.create({
 				...dto,
 			});
-		
-			console.log(dto);
-			console.log(stage);
 
 			return { data: stage, success: true };
 

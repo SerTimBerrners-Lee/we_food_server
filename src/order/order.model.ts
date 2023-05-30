@@ -28,8 +28,11 @@ export class Order extends Model<Order> {
 	@Column({type: DataType.STRING, allowNull: true, defaultValue: StatusOrder.in_work })
 	status: string;
 
-	@Column({type: DataType.INTEGER, allowNull: true })
+	@Column({type: DataType.INTEGER, allowNull: true, defaultValue: 2 })
 	devide_by: number;
+
+	@Column({type: DataType.INTEGER, allowNull: true })
+	dishes_kolvo: number;
 
 	@Column({type: DataType.TEXT, allowNull: true })
 	description: string;

@@ -5,6 +5,7 @@ import { UpCreateOrderDto } from './dto/up-create.dto';
 import { User } from 'src/user/user.model';
 import { ProductLine } from 'src/product_line/product_line.model';
 import { Stage } from 'src/stage/stage.model';
+import { ProcessingOrder, StatusOrder } from 'src/enums';
 
 @Injectable()
 export class OrderService {
@@ -19,8 +20,10 @@ export class OrderService {
 				...dto,
 			});
 
-			return { data: createOrder, success: true };
+			if (!createOrder) return { error: 'Не удалось сохранить заказ', success: false };
+			const findNewOrder = await this.findOne(createOrder.id);
 
+			return { data: findNewOrder, success: true };
 		} catch (err) {
 			console.error(err);
 			const error = err.message;
@@ -58,6 +61,13 @@ export class OrderService {
 				},
 				{
 					model: ProductLine
+				},
+				{
+					model: Stage,
+					attributes: ['id', 'status'],
+					order: [
+						['id', 'DESC']
+					]
 				}
 			]
 		});
@@ -70,7 +80,7 @@ export class OrderService {
 	async findAll(page = 1, limit = 25): Promise<{ data: Order[]; total: number, success: boolean }> {
 		const offset = (page - 1) * limit;
 		const { count, rows } = await this.orderRepository.findAndCountAll({
-			offset, limit, where: { ban: false },
+			offset, limit, where: { ban: false, processing: ProcessingOrder.confirmed },
 			include: [
 				{
 					model: User
@@ -80,12 +90,70 @@ export class OrderService {
 				},
 				{
 					model: Stage,
-					attributes: ['id', 'status']
+					attributes: ['id', 'status'],
+					order: [
+						['id', 'DESC']
+					]
 				}
 			]
 		});
 
 		return { data: rows, total: count, success: true };
+	}
+
+	async findNotConfirmed(page = 1, limit = 25): Promise<{ data: Order[]; total: number, success: boolean }> {
+		const offset = (page - 1) * limit;
+		const { count, rows } = await this.orderRepository.findAndCountAll({
+			offset, limit, where: { ban: false, processing: ProcessingOrder.not_confirmed },
+			include: [
+				{
+					model: User
+				},
+				{
+					model: ProductLine
+				},
+				{
+					model: Stage,
+					attributes: ['id', 'status'],
+					order: [
+						['id', 'DESC']
+					]
+				}
+			]
+		});
+
+		return { data: rows, total: count, success: true };
+	}
+
+	async getMyOrders(user_id: number) {
+		try {
+			const orders = await this.orderRepository.findAll({
+				where : {
+					user_id: user_id,
+					ban: false,
+				},
+				include: [
+					{
+						model: User
+					},
+					{
+						model: ProductLine
+					},
+					{
+						model: Stage,
+						attributes: ['id', 'status'],
+						order: [
+							['id', 'DESC']
+						]
+					}
+				]
+			});
+
+			return { data: orders, success: true }
+		} catch (err) {
+			console.error(err);
+			return { error: err.message, success: false };
+		}
 	}
 
 	async findAllBanned(page = 1, limit = 25): Promise<{ data: Order[]; total: number, success: boolean }> {
@@ -101,7 +169,10 @@ export class OrderService {
 				},
 				{
 					model: Stage,
-					attributes: ['id', 'status']
+					attributes: ['id', 'status'],
+					order: [
+						['id', 'DESC']
+					]
 				}
 			]
 		});

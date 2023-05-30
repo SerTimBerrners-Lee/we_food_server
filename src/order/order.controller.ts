@@ -30,6 +30,20 @@ export class OrderController {
 		return { data, total, success, page, limit};
 	}
 
+	@Get('/get_not_confirmed/:page/:limit')
+	async findNotConfirmed(
+		@Param('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+		@Param('limit', new DefaultValuePipe(25), ParseIntPipe) limit: number
+	) {
+		const { data, total, success } = await this.orderService.findNotConfirmed(page, limit);
+		return { data, total, success, page, limit};
+	}
+
+	@Get('/get_my_orders/:user_id')
+	getMyOrders(@Param('user_id') user_id: number) {
+		return this.orderService.getMyOrders(user_id);
+	}
+
 	@Get('/get_all_banned/:page/:limit')
 	async findAllBanned(
 		@Param('page', new DefaultValuePipe(1), ParseIntPipe) page: number,

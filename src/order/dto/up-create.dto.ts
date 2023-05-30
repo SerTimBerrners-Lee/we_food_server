@@ -7,7 +7,8 @@ export class UpCreateOrderDto {
 	readonly processing: string;
 	readonly status: string;
 	readonly description: string;
-	readonly user_number: string;
+	readonly user_id: number;
 	readonly product_line_id: number;
 	readonly devide_by: number;
+	readonly dishes_kolvo: number;
 }

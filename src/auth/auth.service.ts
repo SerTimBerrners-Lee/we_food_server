@@ -6,7 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { AuthCode } from './auth-code.model';
-import { getDaysDiff } from 'src/lib/date_methods';
+import { normalizePhoneNumber } from 'src/lib/phone_methods';
 
 @Injectable()
 export class AuthService {
@@ -22,10 +22,11 @@ export class AuthService {
 			if (!email || !password)
 				return { error: 'Пароль или логин некорректны', success: false };
 				
-			const user = await this.userService.getByEmail(email);
+			const res = await this.userService.findByEmail(email);
 			
-			if (!user)
-				return { error: 'Пользователь не найден', success: false };
+			if (!res.success) return res;
+
+			const user = res.data;
 
 			if (user.role === Role.client)
 				return { error: 'Клиент не имеет доступа в CRM систему', success: false };
@@ -59,15 +60,17 @@ export class AuthService {
 	async authByPhone(phone: string) {
 		try {
 			if (!phone || phone.length < 7) return { success: false, error: 'Введите правильный номер' };
+			const formatPhone = normalizePhoneNumber(phone);
 
-			let findUser: any = await this.userService.findByPhone(phone);
+			let findUser: any = await this.userService.findByPhone(formatPhone);
 
 			if (!findUser.success)
-				findUser = await this.userService.createClient(phone);
+				findUser = await this.userService.createClient(formatPhone);
 			
-			console.log("\n\n\nfindUser: ", findUser);
 			if (!findUser || !findUser.success)
 				return { success: false, error: 'Произошла системная ошибка, пожалуйста обратитесь в поддержку'};
+
+			if (findUser.ban) return { success: false, error: 'Извините, вы не имеете доступа в систему'};
 
 			const min = 1000;
 			const max = 9999;
@@ -110,7 +113,9 @@ export class AuthService {
 		try {
 			if (!code || code.length < 4) return { success: false, error: 'Введите правильный код' };
 
-			const findUser = await this.userService.findByPhone(phone);
+			const formatPhone = normalizePhoneNumber(phone);
+
+			const findUser = await this.userService.findByPhone(formatPhone);
 			if (!findUser.success) return findUser;
 
 			const { data } = findUser;
@@ -138,7 +143,7 @@ export class AuthService {
 
 			const token = await this.generateToken(data);
 
-			return { data: { token, data }, success: true };
+			return { data: { token, user: data }, success: true };
 		} catch (err) {
 			console.error(err);
 			return { success: false, error: err.message }

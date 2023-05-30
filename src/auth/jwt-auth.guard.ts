@@ -13,8 +13,6 @@ export class JwtAuth implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
 
-        console.log("req.hostname:", req.hostname)
-
         if (this.tryPath(req.hostname)) return true;
         
         try {

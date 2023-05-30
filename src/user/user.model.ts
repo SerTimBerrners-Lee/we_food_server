@@ -1,7 +1,8 @@
-import { Column, DataType, HasMany, Table, Model, AfterSync } from "sequelize-typescript";
+import { Column, DataType, HasMany, Table, Model, AfterSync, BeforeCreate, BeforeUpdate, AfterUpdate, BeforeSave } from "sequelize-typescript";
 import { ClientStatus, Role } from "src/enums";
 import * as bcrypt from 'bcryptjs';
 import { Order } from "src/order/order.model";
+import { normalizePhoneNumber } from "src/lib/phone_methods";
 
 @Table({tableName: 'users'})
 export class User extends Model<User> {
@@ -75,4 +76,8 @@ export class User extends Model<User> {
 		}
 	}
 
+	@BeforeSave
+	static async checkPhoneNumberCreate(instans: any) {
+		instans.phone = instans.phone ? normalizePhoneNumber(instans.phone).trim() : '';
+	}
 }
