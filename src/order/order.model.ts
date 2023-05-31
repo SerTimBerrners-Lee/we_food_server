@@ -28,6 +28,9 @@ export class Order extends Model<Order> {
 	@Column({type: DataType.STRING, allowNull: true, defaultValue: StatusOrder.in_work })
 	status: string;
 
+	@Column({type: DataType.STRING, allowNull: true, defaultValue: '07:00' })
+	time: string;
+
 	@Column({type: DataType.INTEGER, allowNull: true, defaultValue: 2 })
 	devide_by: number;
 

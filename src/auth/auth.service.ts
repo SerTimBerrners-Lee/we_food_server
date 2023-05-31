@@ -7,12 +7,14 @@ import { User } from 'src/user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { AuthCode } from './auth-code.model';
 import { normalizePhoneNumber } from 'src/lib/phone_methods';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
+		private smsService: SmsService,
 		@InjectModel(AuthCode) private authCodeRepository: typeof AuthCode,
 	) {}
 
@@ -57,6 +59,12 @@ export class AuthService {
 		return this.jwtService.sign(payload);
 	}
 
+	/**
+	 * Авторизируем по телефону и возвращаем объект пользователя
+	 * Если человека по такому номеру не найдено - создаем.
+	 * @param phone 
+	 * @returns 
+	 */
 	async authByPhone(phone: string) {
 		try {
 			if (!phone || phone.length < 7) return { success: false, error: 'Введите правильный номер' };
@@ -75,8 +83,11 @@ export class AuthService {
 			const min = 1000;
 			const max = 9999;
 
-			const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-			console.log("randomNumber: ", randomNumber);
+			const randomCode = (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+			console.log("randomCode: ", randomCode);
+
+			const sms_id = await this.smsService.sendSMS(phone, randomCode);
+			if (!sms_id) return { ssuccess: false, error: 'Не удалось отправить код подтверждения.'}
 
 			// Перед созданием удаляем все уже имеющиеся записи (если они есть)
 			const findAllCode = await this.authCodeRepository.findAll({
@@ -88,7 +99,7 @@ export class AuthService {
 
 			const code = await this.authCodeRepository.create({
 				user_id: findUser.data.id,
-				code: randomNumber.toString()
+				code: randomCode
 			});
 
 			if (!code)

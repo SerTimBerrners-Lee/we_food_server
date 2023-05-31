@@ -17,6 +17,7 @@ import { KitchenModule } from './kitchen/kitchen.module';
 import { Stage } from "./stage/stage.model";
 import { StageDishes } from "./stage/stage-dishes.motel";
 import { Dishes } from "./dishes/dishes.model";
+import { SmsModule } from "./sms/sms.module";
 
 @Module({
   controllers: [],
@@ -52,6 +53,7 @@ import { Dishes } from "./dishes/dishes.model";
     DishesModule,
     StageModule,
     KitchenModule,
+    SmsModule
   ],
 })
 export class AppModule {}

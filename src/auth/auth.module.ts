@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthCode } from './auth-code.model';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   providers: [AuthService],
@@ -13,6 +14,7 @@ import { AuthCode } from './auth-code.model';
     SequelizeModule.forFeature([AuthCode]),
     
     UserModule,
+    SmsModule,
     JwtModule.register({
       secret: 'secret',
       signOptions: {
