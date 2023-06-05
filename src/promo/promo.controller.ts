@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put } from '@nestjs/common';
 import { PromoService } from './promo.service';
 import { UpCreatePromoDto } from './dto/UpCreatePromo.dto';
 
@@ -14,5 +14,10 @@ export class PromoController {
 	@Post('create')
 	create(@Body() dto: UpCreatePromoDto) {
 		return this.promoService.create(dto);
+	}
+
+	@Put('update')
+	update(@Body() dto: UpCreatePromoDto) {
+		return this.promoService.update(dto);
 	}
 }
