@@ -18,6 +18,8 @@ import { Stage } from "./stage/stage.model";
 import { StageDishes } from "./stage/stage-dishes.motel";
 import { Dishes } from "./dishes/dishes.model";
 import { SmsModule } from "./sms/sms.module";
+import { PromoModule } from './promo/promo.module';
+import { Promo } from "./promo/promo.model";
 
 @Module({
   controllers: [],
@@ -39,7 +41,8 @@ import { SmsModule } from "./sms/sms.module";
         Order,
         Stage,
         StageDishes,
-        Dishes
+        Dishes,
+        Promo
       ],
       autoLoadModels: true,
     }),
@@ -53,7 +56,8 @@ import { SmsModule } from "./sms/sms.module";
     DishesModule,
     StageModule,
     KitchenModule,
-    SmsModule
+    SmsModule,
+    PromoModule
   ],
 })
 export class AppModule {}

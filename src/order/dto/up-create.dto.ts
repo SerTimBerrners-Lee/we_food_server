@@ -12,4 +12,5 @@ export class UpCreateOrderDto {
 	readonly devide_by: number;
 	readonly dishes_kolvo: number;
 	readonly time: string;
+	readonly promo_id: number;
 }

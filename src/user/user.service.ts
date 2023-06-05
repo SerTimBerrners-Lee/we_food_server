@@ -57,6 +57,14 @@ export class UserService {
 			});
 
 			if (!newClient) return { success: false, error: 'Произошла системная ошибка' }
+
+			const users = await this.findAllByRole([Role.admin, Role.manager]);
+			if (users.success) {
+				const data = users.data;
+				const emails = data.map(el => el.email);
+				this.mailService.createNewCient(phone, emails);
+			}
+
 			return { success: true, data: newClient };
 
 		} catch (err) {
@@ -245,6 +253,26 @@ export class UserService {
 			
 			return { success: true, data: findUser }
 
+		} catch (err) {
+			console.error(err);
+			return { success: false, error: err.message };
+		}
+	}
+
+	async findAllByRole(roles: any[]) {
+		try {
+			const users = await this.userRepository.findAll({
+				where: { 
+					role: {
+						[Op.in]: roles
+					},
+					ban: false
+				}, attributes: ['id', 'email']
+			});
+
+			if (!users) return { success: false, error: 'Не удалось найти пользователей' }
+
+			return { success: true, data: users };
 		} catch (err) {
 			console.error(err);
 			return { success: false, error: err.message };

@@ -1,6 +1,7 @@
 import { Column, DataType, ForeignKey, Table, Model, BelongsTo, HasMany } from "sequelize-typescript";
 import { PaymentMethodOrder, PaymentStateOrder, ProcessingOrder, StatusOrder } from "src/enums";
 import { ProductLine } from "src/product_line/product_line.model";
+import { Promo } from "src/promo/promo.model";
 import { Stage } from "src/stage/stage.model";
 import { User } from "src/user/user.model";
 
@@ -56,6 +57,13 @@ export class Order extends Model<Order> {
 
 	@BelongsTo(() => ProductLine)
 	product_line: ProductLine;
+
+	@ForeignKey(() => Promo)
+	@Column({type: DataType.INTEGER})
+	promo_id: number;
+
+	@BelongsTo(() => Promo)
+	promo: Promo;
 
 	@HasMany(() => Stage)
 	stages: Stage[];

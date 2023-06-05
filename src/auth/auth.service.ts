@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { AuthCode } from './auth-code.model';
 import { normalizePhoneNumber } from 'src/lib/phone_methods';
 import { SmsService } from '../sms/sms.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
 		private userService: UserService,
 		private jwtService: JwtService,
 		private smsService: SmsService,
+		private mailService: MailService,
 		@InjectModel(AuthCode) private authCodeRepository: typeof AuthCode,
 	) {}
 

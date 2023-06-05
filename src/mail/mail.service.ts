@@ -32,4 +32,28 @@ export class MailService {
 			}
 		});
 	}
+
+	async newBidRequest(phone: string, emails: any[]) {
+		await this.mailerService.sendMail({
+			to: emails,
+			subject: "Новая заявка",
+			template: './bid_request',
+			context: {
+				phone: phone,
+				date_time: new Date().toLocaleString('ru-RU')
+			}
+		});
+	}
+
+	async createNewCient(phone: string, emails: any[]) {
+		await this.mailerService.sendMail({
+			to: emails,
+			subject: "Новый пользователь был создан",
+			template: './new_client',
+			context: {
+				phone: phone,
+				date_time: new Date().toLocaleString('ru-RU')
+			}
+		});
+	}
 }
